@@ -176,7 +176,9 @@ function isPrime(n){
     return n % i === 0 ? false :
         i > sqrtNewton(n) ? true : iter(n, i+1);
   }
-  return n===1 || n===2 ? true : iter(n,2);
+  return n===1 ? false :
+      n === 2 ? true :
+      iter(n,2);
 }
 
 // Determine primality using fermat test:
@@ -300,7 +302,6 @@ function expmodChecked(base, exp, m){
   }else{
     return base * expmodChecked(base, exp-1, m) % m;
   }
-
 }
 
 function remainderSquareChecked(x, m){
@@ -321,12 +322,83 @@ function millerRabinTest(n, count){
   return result ? 1 : 0;
 }
 
+// ============================ Exercise 1.29 1.30 ======================
+function sum(f, a, next, b){
+  if(a > b){
+    return 0;
+  }
+  return f(a) + sum(f, next(a), next, b)
+}
+
+function sumIter(f, a, next, b){
+  function iter(a, sum_result){
+    return a > b ?
+        sum_result : iter(next(a), sum_result + f(a));
+  }
+  return iter(a, 0)
+}
+
+
+//求积分方法1：Simpson‘s Rule
+function simpsonIntegral(f, a, b, n){
+  const h = (b-a) / n;
+  const next = (x => x+h);
+  return (h/3) * (sumIter(f, a, next, b) + sumIter(f, a+h, next, b-h) + 2 * sumIter(f, a+h, x => x+2*h, b))
+}
+
+//求积分方法2：牛顿-莱布尼兹
+function integral(f, a, b, n){
+  const dx = (b-a)/n;
+  return dx * sumIter(f, a+dx/2, x=>x+dx, b);
+}
+
+
+// ============================ Exercise 1.31 ======================
+
+function product(f, a, next, b){
+  function iter(a, result){
+    return a > b ? result : iter(next(a), f(a)*result)
+  }
+  return iter(a, 1);
+}
+
+function factorial(n){
+  return product(x=>x, 1, x=>x+1, n);
+}
+
+function getPi(n){
+  const f = x => ( x/(x+1) )
+  const g = x => ( (x+2)/(x+1))
+  const next = x => x+2
+  return product(f,2,next,n) * product(g,2,next,n) * 4
+}
+
+// ============================ Exercise 1.32 && 1.33============================
+function accumulate(combiner, baseValue, f, a, next, b){
+  if (a > b) return baseValue;
+  function iter(a, result){
+    return a > b ? result:
+       iter(next(a), combiner(result, f(a)));
+  }
+  return iter(a, baseValue)
+}
+
+function filtered_accumulation(combiner, filter, baseValue, f, a, next, b){
+  function iter(a, result){
+    return a > b ? result :
+        // any excess arguments are simply ignored by the function. This behavior is sometimes referred to as "function overloading."
+        filter(a, b) ? iter(next(a), combiner(f(a), result)) :
+            iter(next(a), result);
+  }
+  return iter(a, baseValue);
+}
+
+
 /* =================================== Test ===============================*/
 
 // time_spend(ways_to_change,[1,5,50,25,10],100); //correct answer 292.
-time_spend(millerRabinTest, 1729, 100)
-time_spend(fermat_test, 1729, 100)
-
+time_spend(filtered_accumulation, (a,b)=>(a + b), isPrime,  0, x=>x, 1, x=>x+1, 6)
+time_spend(filtered_accumulation, (a,b)=>(a + b), (a, b) => find_gdc(a, b) === 1,  0, x=>x, 1, x=>x+1, 6)
 
 
 

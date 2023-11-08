@@ -248,10 +248,43 @@ function findTargetPairIndex1(arr, sum){
 /*============================== Question 7 ==============================
 题目：输入一个数组，如何找出数组中所有和为0的3个数字的三元组？需要注意的是，返回值中不得包含重复的三元组。例如，在数组[-1，0，1，2，-1，-4]中有两个三元组的和为0，它们分别是[-1，0，1]和[-1，-1，2]。
  */
+// 思路是转为twoSum问题，跳过相同的数值，达到去重效果（建立在排序的基础上、就能较好的去重）。
+function threeSum(arr){
+  let length = arr.length;
+  if( length >= 3){
+    // sorts the array in ascending lexicographic order.
+    // 对数字排序必须要提供sort function
+    arr.sort(function(a, b) {
+      return a - b;
+    });
+    console.log(arr)
+  }
+  let result = Array();
 
-
-
+  for(let i=0; i<length-3; i++){
+    let value1 = arr[i];
+    let begIndex = i+1;
+    let endIndex = length-1;
+    while(begIndex < endIndex){
+      if(arr[begIndex] + arr[endIndex] === -value1){
+        result.push([value1, arr[begIndex], arr[endIndex]]);
+        begIndex++;
+        endIndex--;
+        continue;
+      }
+      if (arr[begIndex] + arr[endIndex] < -value1){
+        begIndex++;
+      }else{
+        endIndex--;
+      }
+    }
+    while(arr[i] === arr[i+1] && i< length - 3){
+      i++;
+    }
+  }
+  return result;
+}
 
 /* =================================== Test ===============================*/
-console.log(findTargetPairIndex1([1,2,4,6,10,8,9], 14))
-
+// console.log(findTargetPairIndex1([1,2,4,6,10,8,9], 14))
+console.log(threeSum([-1,0,1,2,-1,-4,5,-7]))
