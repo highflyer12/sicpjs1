@@ -393,12 +393,197 @@ function filtered_accumulation(combiner, filter, baseValue, f, a, next, b){
   return iter(a, baseValue);
 }
 
+// ============================ Exercise 1.34 ============================
+function f(g){
+  return g(2)
+}
+
+// trace the evaluation of f(f): f(f(2))=>f(2(2)). since 2 is not a function, so a type error would occur.
+
+
+// =============== Page 58: Finding roots of equations by the half-interval method ====================
+
+function half_interval_method(f, a, b, tolerance){
+  function searchRoot(a, b){
+    return b-a < tolerance ? (a+b) /2 :
+        f((b + a)/2) === 0 ? (a+b) /2 :
+            f((b + a)/2)   > 0 ? searchRoot(a, (b + a)/2) :
+                searchRoot((b + a)/2, b)
+  }
+  const val_a = f(a);
+  const val_b = f(b);
+  return val_a > 0 && val_b < 0 ? searchRoot(val_b, val_a) :
+         val_a < 0 && val_b > 0 ? searchRoot(val_a, val_b) :
+             "Error: values are not of opposite sign"
+}
+
+// =============== Page 60: fixed point ====================
+// find x that f(x)=x. start from a random guess until converge (next(x)-x is very small).
+// 不是所用的方程都可以通过该方法求得f(x)=x根。
+function fixed_point(f, guess, tolerance){
+  return Math.abs(f(guess) - guess) < tolerance ? guess :
+      fixed_point(f, ( f(guess) + guess)/2, tolerance)
+}
+
+function fixed_point1(f, guess, tolerance){
+  return Math.abs(f(guess) - guess) < tolerance ? guess :
+      fixed_point(f, f(guess), tolerance)
+}
+
+function fixed_point_bisection(f, guess, tolerance){
+  let high = guess + 1;
+  let low  = guess - 1;
+  function recur(low, high){
+    let mid = (high + low)/2;
+    let f_mid = f(mid)
+    if(Math.abs(f_mid - mid) < tolerance) return mid
+    if(f_mid > mid) recur(low, mid);
+    if(f_mid < mid) recur(mid, high);
+  }
+  return recur(low, high)
+}
+
+
+// =============== exercise 1.37 ====================
+function cont_frac_recur(n, d, k){
+  function recur(i){
+    //if i === k, then truncation to N_K/D_K
+    return i === k ? n(k)/d(k) : n(i)/(d(i) + recur(i+1))
+  }
+  return recur(1)
+}
+
+function cont_frac_iter(n, d, k){
+  function iter(i, result){
+    return i === 1 ? result :
+        iter(i-1, n(i-1)/(d(i-1) + result))
+  }
+  return iter(k, n(k)/d(k) )
+}
+
+// =============== exercise 1.38 ====================
+function d(i){
+  return i % 3 === 2 ? (2*i + 2)/3 : 1
+}
+
+// =============== exercise 1.39 Approximation of tangent function：Lambert’s formula ===============
+function tangent_iter(n, d, k){
+  function iter(i, result){
+    return i === 1 ? result :
+        iter(i-1, n(i-1)/(d(i-1) - result))
+  }
+  return iter(k, n(k)/d(k) )
+}
+
+function tan_cf(x, k){
+  return tangent_iter(i=>Math.pow(x,2), i=>2*i-1, k) / x
+}
+
+/* =============================== P64 Newton’s method ===============================*/
+const torelance = 0.0001
+const dx = 0.00001
+
+function fixedPoint(f, guess){
+  return Math.abs(f(guess) - guess) < torelance ? guess : fixedPoint(f, f(guess))
+}
+
+function deriv(g){
+  return x => (g(x+dx) - g(x))/dx
+}
+
+function newton_method(f, guess){
+  return fixedPoint(x=> x- f(x)/deriv(f)(x), guess)
+}
+
+function sqrt(x){
+  return newton_method(y => Math.pow(y, 2) - x, 1)
+}
+
+/* =================================== Exercise 1.40  ===============================*/
+function cubic(a, b, c){
+  return x => x*x*x + a*x*x + b*x + c
+}
+
+function solveCubicEq(a, b, c){
+  return newton_method(cubic(a, b, c), 1)
+}
+
+function solveQuadraticEq(a, b, c){
+  if((Math.pow(b,2) - 4*a*c) < 0) return
+  return newton_method(x => a*Math.pow(x, 2) + b*x +c, 0)
+}
+
+/* =================================== Exercise 1.41  ===============================*/
+function double1(f){
+  return x => f(f(x))
+}
+const inc = x => x+1
+// console.log( double1(double1(double1))(inc)(5)) //=>21
+// console.log( double1(double1(double1(double1)))(inc)(5) ) //=>261
+
+
+/* =================================== Exercise 1.42  ===============================*/
+function compose(f, g){
+  return x => f(g(x))
+}
+//console.log(compose(x=>x*x, inc)(6))
+
+/* =================================== Exercise 1.43  ===============================*/
+function repeated(f, n){
+  return n===1 ? f :
+      compose(f, repeated(f, n-1))
+}
+
+/* =================================== Exercise 1.44  ===============================*/
+function smooth(f){
+  return x=> (f(x-dx) + f(x) + f(x+dx))/3
+}
+
+/* ========================== Exercise 1.45  computing nth roots ===============================*/
+function averageDump(f){
+  return x=> (x+f(x))/2
+}
+
+function getRoot(x, n){
+  const k = Math.floor(Math.log2(n)) // k is the repeat times of averageDump needed to converge
+  const kAverageDump = repeated(averageDump, k)
+  return fixedPoint(kAverageDump(y=> x/Math.pow(y,n-1)), 1)
+}
+
+/* =================================== Exercise 1.44  ===============================*/
+function iterative_improvement(isGoodEnough, improvedGuess){
+  return guess => {
+    while( !isGoodEnough(guess)){
+      guess = improvedGuess(guess)
+    }
+    return guess
+  }
+}
+
+function sqrt4(x){
+  const guess = 1
+  const f = y => x/y
+  const isGoodEnough = (guess) => {return Math.abs(f(guess) - guess) < torelance}
+  const improvedGuess = (guess) => (f(guess) + guess)/2
+
+  return iterative_improvement(isGoodEnough, improvedGuess)(guess)
+}
+
+function fixed_point4(f){
+  // transform f, f is equation to be solved
+  // to find the fixed point of cos(x)=> f(x)=cos(x)-x
+  const g = x=> x- f(x)/deriv(f)(x)
+  const guess = 1
+  const isGoodEnough = (guess) => {return Math.abs(g(guess) - guess) < torelance*0.01}
+  const improvedGuess = (guess) =>  g(guess)
+  return iterative_improvement(isGoodEnough, improvedGuess)(guess)
+}
 
 /* =================================== Test ===============================*/
+console.log(fixed_point4(x=>Math.cos(x)-x))
 
-// time_spend(ways_to_change,[1,5,50,25,10],100); //correct answer 292.
-time_spend(filtered_accumulation, (a,b)=>(a + b), isPrime,  0, x=>x, 1, x=>x+1, 6)
-time_spend(filtered_accumulation, (a,b)=>(a + b), (a, b) => find_gdc(a, b) === 1,  0, x=>x, 1, x=>x+1, 6)
+
+
 
 
 
