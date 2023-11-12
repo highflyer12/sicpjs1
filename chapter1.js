@@ -166,8 +166,8 @@ function multiply_iter(a, b, addon){
 
 
 //============================ 1.2.5 ========================
-function find_gdc(a, b){
-  return b === 0 ? a : find_gdc(b, a % b);
+function find_gcd(a, b){
+  return b === 0 ? a : find_gcd(b, a % b);
 }
 
 //========================= 1.2.6 Testing for Primality ====================
@@ -401,7 +401,7 @@ function f(g){
 // trace the evaluation of f(f): f(f(2))=>f(2(2)). since 2 is not a function, so a type error would occur.
 
 
-// =============== Page 58: Finding roots of equations by the half-interval method ====================
+// =============== Page 58: Find roots of equations by the half-interval method ====================
 
 function half_interval_method(f, a, b, tolerance){
   function searchRoot(a, b){
@@ -419,7 +419,7 @@ function half_interval_method(f, a, b, tolerance){
 
 // =============== Page 60: fixed point ====================
 // find x that f(x)=x. start from a random guess until converge (next(x)-x is very small).
-// 不是所用的方程都可以通过该方法求得f(x)=x根。
+// 不是所有的方程都可以通过该方法求得f(x)=x根。
 function fixed_point(f, guess, tolerance){
   return Math.abs(f(guess) - guess) < tolerance ? guess :
       fixed_point(f, ( f(guess) + guess)/2, tolerance)
@@ -580,7 +580,14 @@ function fixed_point4(f){
 }
 
 /* =================================== Test ===============================*/
-console.log(fixed_point4(x=>Math.cos(x)-x))
+// console.log(fixed_point4(x=>Math.cos(x)-x))
+
+
+
+
+
+
+module.exports = {find_gcd}
 
 
 
