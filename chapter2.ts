@@ -359,10 +359,49 @@ function count_change(total_amount: number, coins: List): number{
                 count_change(total_amount, tail3(coins))
 }
 
+function test219(){
+    const us_coins = list([25, 50, 10, 5, 1]);
+    const uk_coins = list([100, 50, 20, 10, 5, 2, 1]);
+    console.log(count_change(100, us_coins))
+}
+
+/*=====================  Exercise 2.20 ===================*/
+/* !Note
+1. call, apply, and the regular function invocation (f(args)) are ways to call a function, but they differ in how they handle arguments and the context in which the function is called.
+2. handle arguments directly as individual arguments in call and as an array in apply.
+3. When using the regular function invocation syntax (f(args)), the this value is determined by how the function is called in the current context. In contrast, call and apply allow to explicitly set the "this" value.
+ */
+
+function brooks(curried_fn : Function, args: List){
+    const length = len(args)
+    for(let i=0; i<length-1; i++){
+        curried_fn = curried_fn(head3(args))
+        args = tail3(args)
+    }
+    return curried_fn(head3(args))
+}
+
+function brooks_curried(li: List){
+    const curried_fn = head3(li)
+    const args = tail3(li)
+    return brooks(curried_fn, args)
+}
+
+
+function test220(){
+    function plus_curried(x: number) {
+        return (y: number) => x + y;
+    }
+    const result = brooks(plus_curried, list([3, 4]));
+    const result1 = brooks_curried(list([plus_curried, 3, 4]))
+    console.log(result)
+    console.log(result1)
+}
+
+
+
 // ================================ test ==========================
-const us_coins = list([25, 50, 10, 5, 1]);
-const uk_coins = list([100, 50, 20, 10, 5, 2, 1]);
-console.log(count_change(100, us_coins))
+test220()
 
 
 
